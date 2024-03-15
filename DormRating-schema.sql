@@ -1,3 +1,20 @@
+-- Table creation scripts
+-- first drop the existing tables
+drop table owner;
+drop table property;
+drop table dormitory;
+drop table university;
+drop table review;
+drop table user;
+drop table admin_user;
+drop table sublet;
+drop table user_lease;
+drop table lease;
+drop table order;
+drop table coupon;
+drop table comment;
+
+
 -- Owner Table
 CREATE TABLE owner (
     owner_id INT PRIMARY KEY,
