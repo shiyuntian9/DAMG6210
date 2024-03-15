@@ -17,13 +17,17 @@ drop table comment;
 
 -- Owner Table
 CREATE TABLE owner (
-    owner_id INT PRIMARY KEY,
-    owner_type VARCHAR(255),
+    owner_id      NUMBER NOT NULL,
+    owner_type    VARCHAR(255),
     contact_email VARCHAR(255),
     contact_phone VARCHAR(255),
-    owner_info TEXT,
-    status TINYINT
+    owner_info    CLOB, 
+    status        VARCHAR2(1)
 );
+
+ALTER TABLE owner ADD CONSTRAINT owner_pk PRIMARY KEY (owner_id);
+
+
 
 -- Property Table
 CREATE TABLE property (
@@ -189,12 +193,20 @@ CREATE TABLE comment (
 
 
 -- Sample data for owner table
-INSERT INTO owner VALUES
-(1, 'Individual', 'email1@example.com', '1234567890', 'Info about owner 1', 1),
-(2, 'Company', 'email2@example.com', '0987654321', 'Info about owner 2', 1),
-(3, 'Individual', 'email3@example.com', '1122334455', 'Info about owner 3', 1),
-(4, 'Company', 'email4@example.com', '5566778899', 'Info about owner 4', 1),
-(5, 'Individual', 'email5@example.com', '1231231234', 'Info about owner 5', 1);
+INSERT INTO owner (owner_id, owner_type, contact_email, contact_phone, owner_info, status) VALUES
+(1, 'Individual', 'email1@example.com', '1234567890', 'Info about owner 1', '1');
+
+INSERT INTO owner (owner_id, owner_type, contact_email, contact_phone, owner_info, status) VALUES
+(2, 'Company', 'email2@example.com', '0987654321', 'Info about owner 2', '1');
+
+INSERT INTO owner (owner_id, owner_type, contact_email, contact_phone, owner_info, status) VALUES
+(3, 'Individual', 'email3@example.com', '1122334455', 'Info about owner 3', '1');
+
+INSERT INTO owner (owner_id, owner_type, contact_email, contact_phone, owner_info, status) VALUES
+(4, 'Company', 'email4@example.com', '5566778899', 'Info about owner 4', '1');
+
+INSERT INTO owner (owner_id, owner_type, contact_email, contact_phone, owner_info, status) VALUES
+(5, 'Individual', 'email5@example.com', '1231231234', 'Info about owner 5', '1');
 
 -- Sample data for property table
 -- Note: Ensure that owner_id and dorm_id have valid foreign keys before inserting the data.
