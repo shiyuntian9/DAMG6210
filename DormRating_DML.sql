@@ -21,36 +21,36 @@ ALTER SESSION SET NLS_TERRITORY=America;
 CREATE TABLE owner (
     owner_id NUMBER PRIMARY KEY,
     owner_type VARCHAR2(255),
-    contact_email VARCHAR2(255),
-    contact_phone VARCHAR2(255),
+    contact_email VARCHAR2(255) CONSTRAINT own_email_nn NOT NULL,
+    contact_phone VARCHAR2(255) CONSTRAINT own_email_nn NOT NULL,
     owner_info CLOB,
-    status NUMBER(3)
+    status NUMBER(3) CONSTRAINT own_stat_nn NOT NULL
 );
 
 -- University Table
 CREATE TABLE university (
     university_id NUMBER PRIMARY KEY,
-    university_name VARCHAR2(255),
-    location_state VARCHAR2(255),
-    location_city VARCHAR2(255),
+    university_name VARCHAR2(255) CONSTRAINT univ_name_nn NOT NULL,
+    location_state VARCHAR2(255) CONSTRAINT univ_state_nn NOT NULL,
+    location_city VARCHAR2(255) CONSTRAINT univ_city_nn NOT NULL,
     univ_photo BLOB,
     univ_description CLOB,
     official_website_link VARCHAR2(255),
-    status NUMBER(3)
+    status NUMBER(3) CONSTRAINT univ_stat_nn NOT NULL
 );
 
 -- Dormitory Table
 CREATE TABLE dormitory (
     dorm_id NUMBER PRIMARY KEY,
-    university_id NUMBER,
-    dorm_name VARCHAR2(255),
-    room_score NUMBER,
-    environment_score FLOAT,
-    location_score FLOAT,
-    facility_score FLOAT,
+    university_id NUMBER NOT NULL,
+    dorm_name VARCHAR2(255) CONSTRAINT dorm_name_nn NOT NULL,
+    room_score NUMBER CONSTRAINT dorm_rscore_nn NOT NULL,
+    environment_score FLOAT CONSTRAINT dorm_escore_nn NOT NULL,
+    location_score FLOAT CONSTRAINT dorm_lscore_nn NOT NULL,
+    facility_score FLOAT CONSTRAINT dorm_fscore_nn NOT NULL,
     dorm_photo BLOB,
     number_of_rating NUMBER,
-    status NUMBER(3)
+    status NUMBER(3) CONSTRAINT dorm_stat_nn NOT NULL
     CONSTRAINT fk_dormitory_univ FOREIGN KEY (university_id) REFERENCES university(university_id)
 );
 
@@ -65,15 +65,15 @@ CREATE TABLE property (
     property_id NUMBER PRIMARY KEY,
     owner_id NUMBER,
     dorm_id NUMBER,
-    room_type VARCHAR2(255),
-    monthly_rent NUMBER,
-    deposit NUMBER,
+    room_type VARCHAR2(255) CONSTRAINT prop_rtype_nn NOT NULL,
+    monthly_rent NUMBER CONSTRAINT prop_mrent_nn NOT NULL,
+    deposit NUMBER CONSTRAINT prop_deposit_nn NOT NULL,
     min_lease_period NUMBER(3),
     max_lease_period NUMBER(3),
-    available_from DATE,
+    available_from DATE CONSTRAINT prop_afrom_nn NOT NULL,
     property_photo BLOB,
     description CLOB,
-    status NUMBER(3),
+    status NUMBER(3) CONSTRAINT property_stauts_nn NOT NULL,
     CONSTRAINT fk_property_owner FOREIGN KEY (owner_id) REFERENCES owner(owner_id),
     CONSTRAINT fk_property_dorm FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id)
 );
@@ -95,11 +95,11 @@ CREATE TABLE review (
     dorm_id NUMBER,
     comment_text CLOB,
     room_type VARCHAR2(255),
-    room_overall_score NUMBER(3),
+    room_overall_score NUMBER(3) CONSTRAINT rev_roscore_nn NOT NULL,
     environment_score NUMBER(3),
     location_overall_score NUMBER(3),
     facility_overall_score NUMBER(3),
-    review_time TIMESTAMP,
+    review_time TIMESTAMP CONSTRAINT rev_rtime_nn NOT NULL,
     status NUMBER(3),
     FOREIGN KEY (user_id) REFERENCES user_table(user_id),
     FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id)
@@ -119,22 +119,22 @@ FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id);
 CREATE TABLE user_table (
     user_id NUMBER PRIMARY KEY,
     nickname VARCHAR2(255),
-    user_email VARCHAR2(255),
-    password VARCHAR2(255),
+    user_email VARCHAR2(255) CONSTRAINT usr_email_nn NOT NULL,
+    password VARCHAR2(255) CONSTRAINT usr_pwd_nn NOT NULL,
     payment_method VARCHAR2(255),
     balance FLOAT,
     grade VARCHAR2(255),
     avatar BLOB,
-    register_time DATE,
+    register_time DATE CONSTRAINT usr_rtime_nn NOT NULL,
     status NUMBER(3)
 );
 
 -- Admin_user Table
 CREATE TABLE admin_user (
     admin_user_id NUMBER PRIMARY KEY,
-    admin_username VARCHAR2(255),
-    admin_password VARCHAR2(255),
-    permission_level NUMBER(3),
+    admin_username VARCHAR2(255) CONSTRAINT adm_usr_nn NOT NULL,
+    admin_password VARCHAR2(255) CONSTRAINT adm_pwd_nn NOT NULL,
+    permission_level NUMBER(3) CONSTRAINT adm_perm_lvl_nn NOT NULL,
     status NUMBER(3)
 );
 
@@ -142,12 +142,13 @@ CREATE TABLE admin_user (
 CREATE TABLE lease (
     lease_id NUMBER PRIMARY KEY,
     property_id NUMBER,
-    lease_start_time DATE,
-    deposit_status NUMBER(3),
-    contract_file BLOB,
-    status NUMBER(3),
+    lease_start_time DATE CONSTRAINT lease_stime_nn NOT NULL,
+    deposit_status NUMBER(3) CONSTRAINT lease_dstat_nn NOT NULL,
+    contract_file BLOB CONSTRAINT lease_cfile_nn NOT NULL,
+    status NUMBER(3) CONSTRAINT lease_stat_nn NOT NULL,
     FOREIGN KEY (property_id) REFERENCES property(property_id)
 );
+
 
 --Foreign key referencing the Property table
 ALTER TABLE lease
@@ -161,14 +162,15 @@ CREATE TABLE sublet (
     lease_id NUMBER,
     lessee_user_id NUMBER,
     lessor_user_id NUMBER,
-    sublease_rent NUMBER,
-    available_from DATE,
-    available_end DATE,
-    status NUMBER(3),
+    sublease_rent NUMBER CONSTRAINT sublet_rent_nn NOT NULL,
+    available_from DATE CONSTRAINT sublet_afrom_nn NOT NULL,
+    available_end DATE CONSTRAINT sublet_aend_nn NOT NULL,
+    status NUMBER(3) CONSTRAINT sublet_stat_nn NOT NULL,
     FOREIGN KEY (lease_id) REFERENCES lease(lease_id),
     FOREIGN KEY (lessee_user_id) REFERENCES user_table(user_id),
     FOREIGN KEY (lessor_user_id) REFERENCES user_table(user_id)
 );
+
 
 --Three foreign keys; referencing the Lease table, and two referencing the User Table (for lessee and lessor)
 ALTER TABLE sublet
@@ -189,7 +191,7 @@ CREATE TABLE user_lease (
     user_lease_id NUMBER PRIMARY KEY,
     user_id NUMBER,
     lease_id NUMBER,
-    lease_status NUMBER(3),
+    lease_status NUMBER(3) CONSTRAINT lease_stat_nn NOT NULL,
     FOREIGN KEY (user_id) REFERENCES user_table(user_id)
     FOREIGN KEY (lease_id) REFERENCES lease(lease_id),
 );
@@ -209,9 +211,9 @@ CREATE TABLE coupon (
     coupon_id NUMBER PRIMARY KEY,
     description CLOB,
     user_id NUMBER,
-    effective_time TIMESTAMP,
-    expire_time TIMESTAMP,
-    status NUMBER(3),
+    effective_time TIMESTAMP CONSTRAINT effct_time_nn NOT NULL,
+    expire_time TIMESTAMP CONSTRAINT expr_time_nn NOT NULL,
+    status NUMBER(3) CONSTRAINT coupon_stat_nn NOT NULL,
     FOREIGN KEY (user_id) REFERENCES user_table(user_id)
 );
 
@@ -227,18 +229,19 @@ CREATE TABLE order_table (
     user_id NUMBER,
     lease_id NUMBER,
     coupon_id NUMBER,
-    amount_payable FLOAT,
-    amount_paid FLOAT,
-    amount_discount FLOAT,
-    late_payment_fee FLOAT,
-    due TIMESTAMP,
-    generate_time DATE,
-    payment_time DATE,
-    status NUMBER(3),
+    amount_payable FLOAT CONSTRAINT ord_apay_nn NOT NULL,
+    amount_paid FLOAT CONSTRAINT ord_apd_nn NOT NULL,
+    amount_discount FLOAT CONSTRAINT ord_adisc_nn NOT NULL,
+    late_payment_fee FLOAT CONSTRAINT ord_lpf_nn NOT NULL,
+    due TIMESTAMP CONSTRAINT ord_due_nn NOT NULL,
+    generate_time DATE CONSTRAINT ord_gtime_nn NOT NULL,
+    payment_time DATE CONSTRAINT ord_ptime_nn NOT NULL,
+    status NUMBER(3) CONSTRAINT ord_stat_nn NOT NULL,
     FOREIGN KEY (user_id) REFERENCES user_table(user_id),
     FOREIGN KEY (lease_id) REFERENCES lease(lease_id),
     FOREIGN KEY (coupon_id) REFERENCES coupon(coupon_id)
 );
+
 
 --Three foreign keys; one referencing the User Table, one referencing the Lease table, and one referencing the Coupon table
 ALTER TABLE order_table
@@ -259,13 +262,14 @@ CREATE TABLE comment (
     comment_id NUMBER PRIMARY KEY,
     user_id NUMBER,
     university_id NUMBER,
-    comment_content CLOB,
-    number_of_upvote NUMBER,
-    comment_time TIMESTAMP,
-    status NUMBER(3),
+    comment_content CLOB CONSTRAINT comm_cont_nn NOT NULL,
+    number_of_upvote NUMBER CONSTRAINT comm_upvote_nn NOT NULL,
+    comment_time TIMESTAMP CONSTRAINT comm_time_nn NOT NULL,
+    status NUMBER(3) CONSTRAINT comm_stat_nn NOT NULL,
     FOREIGN KEY (user_id) REFERENCES user_table(user_id),
     CONSTRAINT fk_comment_univ FOREIGN KEY (university_id) REFERENCES university(university_id)
 );
+
 
 --two foreign keys; one referencing the User Table, and the other referencing the University table
 ALTER TABLE comment
