@@ -54,6 +54,12 @@ CREATE TABLE dormitory (
     CONSTRAINT fk_dormitory_univ FOREIGN KEY (university_id) REFERENCES university(university_id)
 );
 
+-- Foreign Key for dormitory referencing university
+ALTER TABLE dormitory
+ADD CONSTRAINT dorm_univ_fk
+FOREIGN KEY (university_id) REFERENCES university(university_id);
+
+
 -- Property Table
 CREATE TABLE property (
     property_id NUMBER PRIMARY KEY,
@@ -72,6 +78,16 @@ CREATE TABLE property (
     CONSTRAINT fk_property_dorm FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id)
 );
 
+--Two foreign keys; one referencing the Owner table, and the other referencing the Dormitory table
+ALTER TABLE property
+ADD CONSTRAINT prop_own_fk
+FOREIGN KEY (owner_id) REFERENCES owner(owner_id);
+
+ALTER TABLE property
+ADD CONSTRAINT prop_dorm_fk
+FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id);
+
+
 -- Review Table
 CREATE TABLE review (
     review_id NUMBER PRIMARY KEY,
@@ -88,6 +104,16 @@ CREATE TABLE review (
     FOREIGN KEY (user_id) REFERENCES user_table(user_id),
     FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id)
 );
+
+--Two foreign keys; one referencing the User Table, and the other referencing the Dormitory table
+ALTER TABLE review
+ADD CONSTRAINT rev_user_fk
+FOREIGN KEY (user_id) REFERENCES user_table(user_id);
+
+ALTER TABLE review
+ADD CONSTRAINT rev_dorm_fk
+FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id);
+
 
 -- User Table
 CREATE TABLE user_table (
@@ -123,6 +149,12 @@ CREATE TABLE lease (
     FOREIGN KEY (property_id) REFERENCES property(property_id)
 );
 
+--Foreign key referencing the Property table
+ALTER TABLE lease
+ADD CONSTRAINT lease_prop_fk
+FOREIGN KEY (property_id) REFERENCES property(property_id);
+
+
 -- Sublet Table
 CREATE TABLE sublet (
     sublease_id NUMBER PRIMARY KEY,
@@ -138,6 +170,20 @@ CREATE TABLE sublet (
     FOREIGN KEY (lessor_user_id) REFERENCES user_table(user_id)
 );
 
+--Three foreign keys; referencing the Lease table, and two referencing the User Table (for lessee and lessor)
+ALTER TABLE sublet
+ADD CONSTRAINT sub_lease_fk
+FOREIGN KEY (lease_id) REFERENCES lease(lease_id);
+
+ALTER TABLE sublet
+ADD CONSTRAINT sub_lessee_fk
+FOREIGN KEY (lessee_user_id) REFERENCES user_table(user_id);
+
+ALTER TABLE sublet
+ADD CONSTRAINT sub_lessor_fk
+FOREIGN KEY (lessor_user_id) REFERENCES user_table(user_id);
+
+
 -- User_lease Table
 CREATE TABLE user_lease (
     user_lease_id NUMBER PRIMARY KEY,
@@ -147,6 +193,16 @@ CREATE TABLE user_lease (
     FOREIGN KEY (user_id) REFERENCES user_table(user_id)
     FOREIGN KEY (lease_id) REFERENCES lease(lease_id),
 );
+
+--Two foreign keys; one referencing the User Table, and the other referencing the Lease table
+ALTER TABLE user_lease
+ADD CONSTRAINT ul_user_fk
+FOREIGN KEY (user_id) REFERENCES user_table(user_id);
+
+ALTER TABLE user_lease
+ADD CONSTRAINT ul_lease_fk
+FOREIGN KEY (lease_id) REFERENCES lease(lease_id);
+
 
 -- Coupon Table
 CREATE TABLE coupon (
@@ -158,6 +214,12 @@ CREATE TABLE coupon (
     status NUMBER(3),
     FOREIGN KEY (user_id) REFERENCES user_table(user_id)
 );
+
+--Foreign key referencing the User Table
+ALTER TABLE coupon
+ADD CONSTRAINT coup_user_fk
+FOREIGN KEY (user_id) REFERENCES user_table(user_id);
+
 
 -- Order Table (renamed to avoid reserved keyword)
 CREATE TABLE order_table (
@@ -178,6 +240,20 @@ CREATE TABLE order_table (
     FOREIGN KEY (coupon_id) REFERENCES coupon(coupon_id)
 );
 
+--Three foreign keys; one referencing the User Table, one referencing the Lease table, and one referencing the Coupon table
+ALTER TABLE order_table
+ADD CONSTRAINT ord_user_fk
+FOREIGN KEY (user_id) REFERENCES user_table(user_id);
+
+ALTER TABLE order_table
+ADD CONSTRAINT ord_lease_fk
+FOREIGN KEY (lease_id) REFERENCES lease(lease_id);
+
+ALTER TABLE order_table
+ADD CONSTRAINT ord_coupon_fk
+FOREIGN KEY (coupon_id) REFERENCES coupon(coupon_id);
+
+
 -- Comment Table
 CREATE TABLE comment (
     comment_id NUMBER PRIMARY KEY,
@@ -190,4 +266,15 @@ CREATE TABLE comment (
     FOREIGN KEY (user_id) REFERENCES user_table(user_id),
     CONSTRAINT fk_comment_univ FOREIGN KEY (university_id) REFERENCES university(university_id)
 );
+
+--two foreign keys; one referencing the User Table, and the other referencing the University table
+ALTER TABLE comment
+ADD CONSTRAINT comm_user_fk
+FOREIGN KEY (user_id) REFERENCES user_table(user_id);
+
+ALTER TABLE comment
+ADD CONSTRAINT comm_univ_fk
+FOREIGN KEY (university_id) REFERENCES university(university_id);
+
+
 
