@@ -1,5 +1,4 @@
 --Login as DormRating user account and run below script
-
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE owner CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE property CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE dormitory CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
@@ -52,7 +51,7 @@ CREATE TABLE dormitory (
     facility_score FLOAT CONSTRAINT dorm_fscore_nn NOT NULL,
     dorm_photo BLOB,
     number_of_rating NUMBER,
-    status NUMBER(3) CONSTRAINT dorm_stat_nn NOT NULL
+    status NUMBER(3) CONSTRAINT dorm_stat_nn NOT NULL,
     CONSTRAINT fk_dormitory_univ FOREIGN KEY (university_id) REFERENCES university(university_id)
 );
 
@@ -193,9 +192,9 @@ CREATE TABLE user_lease (
     user_lease_id NUMBER CONSTRAINT user_lease_pk PRIMARY KEY,
     user_id NUMBER,
     lease_id NUMBER,
-    lease_status NUMBER(3) CONSTRAINT lease_stat_nn NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES user_table(user_id)
-    FOREIGN KEY (lease_id) REFERENCES lease(lease_id),
+    lease_status NUMBER(3) CONSTRAINT ul_lease_stat_nn NOT NULL, 
+    FOREIGN KEY (user_id) REFERENCES user_table(user_id),
+    FOREIGN KEY (lease_id) REFERENCES lease(lease_id)
 );
 
 --Two foreign keys; one referencing the User Table, and the other referencing the Lease table
@@ -211,7 +210,7 @@ FOREIGN KEY (lease_id) REFERENCES lease(lease_id);
 -- Coupon Table
 CREATE TABLE coupon (
     coupon_id NUMBER CONSTRAINT coupon_pk PRIMARY KEY,
-    description CLOB,
+    description_coupon CLOB,
     user_id NUMBER,
     effective_time TIMESTAMP CONSTRAINT effct_time_nn NOT NULL,
     expire_time TIMESTAMP CONSTRAINT expr_time_nn NOT NULL,
@@ -260,7 +259,7 @@ FOREIGN KEY (coupon_id) REFERENCES coupon(coupon_id);
 
 
 -- Comment Table
-CREATE TABLE comment (
+CREATE TABLE comment_table (
     comment_id NUMBER PRIMARY KEY,
     user_id NUMBER,
     university_id NUMBER,
@@ -274,11 +273,11 @@ CREATE TABLE comment (
 
 
 --two foreign keys; one referencing the User Table, and the other referencing the University table
-ALTER TABLE comment
+ALTER TABLE comment_table
 ADD CONSTRAINT comm_user_fk
 FOREIGN KEY (user_id) REFERENCES user_table(user_id);
 
-ALTER TABLE comment
+ALTER TABLE comment_table
 ADD CONSTRAINT comm_univ_fk
 FOREIGN KEY (university_id) REFERENCES university(university_id);
 
