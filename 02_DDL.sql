@@ -1,17 +1,31 @@
---Login as DormRating user account and run below script
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE owner CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE property CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE dormitory CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE university CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE review CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE user_table CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE admin_user CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE sublet CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE lease CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE user_lease CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE order_table CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE coupon CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
-BEGIN EXECUTE IMMEDIATE 'DROP TABLE comment CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE comment_table CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
+
+
 
 ALTER SESSION SET NLS_LANGUAGE=American;
 ALTER SESSION SET NLS_TERRITORY=America;
@@ -57,12 +71,6 @@ CREATE TABLE dormitory (
     CONSTRAINT fk_dormitory_univ FOREIGN KEY (university_id) REFERENCES university(university_id)
 );
 
--- Foreign Key for dormitory referencing university
-ALTER TABLE dormitory
-ADD CONSTRAINT dorm_univ_fk
-FOREIGN KEY (university_id) REFERENCES university(university_id);
-
-
 
 -- Property Table
 CREATE TABLE property (
@@ -82,15 +90,20 @@ CREATE TABLE property (
     CONSTRAINT fk_property_dorm FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id)
 );
 
---Two foreign keys; one referencing the Owner table, and the other referencing the Dormitory table
-ALTER TABLE property
-ADD CONSTRAINT prop_own_fk
-FOREIGN KEY (owner_id) REFERENCES owner(owner_id);
 
-ALTER TABLE property
-ADD CONSTRAINT prop_dorm_fk
-FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id);
-
+-- User Table
+CREATE TABLE user_table (
+    user_id NUMBER CONSTRAINT user_pk PRIMARY KEY,
+    nickname VARCHAR2(255),
+    user_email VARCHAR2(255) CONSTRAINT usr_email_nn NOT NULL,
+    password VARCHAR2(255) CONSTRAINT usr_pwd_nn NOT NULL,
+    payment_method VARCHAR2(255),
+    balance FLOAT,
+    grade VARCHAR2(255),
+    avatar BLOB,
+    register_time DATE CONSTRAINT usr_rtime_nn NOT NULL,
+    status NUMBER(3)
+);
 
 -- Review Table
 CREATE TABLE review (
@@ -107,30 +120,6 @@ CREATE TABLE review (
     status NUMBER(3),
     FOREIGN KEY (user_id) REFERENCES user_table(user_id),
     FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id)
-);
-
---Two foreign keys; one referencing the User Table, and the other referencing the Dormitory table
-ALTER TABLE review
-ADD CONSTRAINT rev_user_fk
-FOREIGN KEY (user_id) REFERENCES user_table(user_id);
-
-ALTER TABLE review
-ADD CONSTRAINT rev_dorm_fk
-FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id);
-
-
--- User Table
-CREATE TABLE user_table (
-    user_id NUMBER CONSTRAINT user_pk PRIMARY KEY,
-    nickname VARCHAR2(255),
-    user_email VARCHAR2(255) CONSTRAINT usr_email_nn NOT NULL,
-    password VARCHAR2(255) CONSTRAINT usr_pwd_nn NOT NULL,
-    payment_method VARCHAR2(255),
-    balance FLOAT,
-    grade VARCHAR2(255),
-    avatar BLOB,
-    register_time DATE CONSTRAINT usr_rtime_nn NOT NULL,
-    status NUMBER(3)
 );
 
 -- Admin_user Table
@@ -153,13 +142,6 @@ CREATE TABLE lease (
     FOREIGN KEY (property_id) REFERENCES property(property_id)
 );
 
-
---Foreign key referencing the Property table
-ALTER TABLE lease
-ADD CONSTRAINT lease_prop_fk
-FOREIGN KEY (property_id) REFERENCES property(property_id);
-
-
 -- Sublet Table
 CREATE TABLE sublet (
     sublease_id NUMBER CONSTRAINT sublet_pk PRIMARY KEY,
@@ -176,20 +158,6 @@ CREATE TABLE sublet (
 );
 
 
---Three foreign keys; referencing the Lease table, and two referencing the User Table (for lessee and lessor)
-ALTER TABLE sublet
-ADD CONSTRAINT sub_lease_fk
-FOREIGN KEY (lease_id) REFERENCES lease(lease_id);
-
-ALTER TABLE sublet
-ADD CONSTRAINT sub_lessee_fk
-FOREIGN KEY (lessee_user_id) REFERENCES user_table(user_id);
-
-ALTER TABLE sublet
-ADD CONSTRAINT sub_lessor_fk
-FOREIGN KEY (lessor_user_id) REFERENCES user_table(user_id);
-
-
 -- User_lease Table
 CREATE TABLE user_lease (
     user_lease_id NUMBER CONSTRAINT user_lease_pk PRIMARY KEY,
@@ -200,14 +168,6 @@ CREATE TABLE user_lease (
     FOREIGN KEY (lease_id) REFERENCES lease(lease_id)
 );
 
---Two foreign keys; one referencing the User Table, and the other referencing the Lease table
-ALTER TABLE user_lease
-ADD CONSTRAINT ul_user_fk
-FOREIGN KEY (user_id) REFERENCES user_table(user_id);
-
-ALTER TABLE user_lease
-ADD CONSTRAINT ul_lease_fk
-FOREIGN KEY (lease_id) REFERENCES lease(lease_id);
 
 
 -- Coupon Table
@@ -220,11 +180,6 @@ CREATE TABLE coupon (
     status NUMBER(3) CONSTRAINT coupon_stat_nn NOT NULL,
     FOREIGN KEY (user_id) REFERENCES user_table(user_id)
 );
-
---Foreign key referencing the User Table
-ALTER TABLE coupon
-ADD CONSTRAINT coup_user_fk
-FOREIGN KEY (user_id) REFERENCES user_table(user_id);
 
 
 -- Order Table (renamed to avoid reserved keyword)
@@ -247,19 +202,6 @@ CREATE TABLE order_table (
 );
 
 
---Three foreign keys; one referencing the User Table, one referencing the Lease table, and one referencing the Coupon table
-ALTER TABLE order_table
-ADD CONSTRAINT ord_user_fk
-FOREIGN KEY (user_id) REFERENCES user_table(user_id);
-
-ALTER TABLE order_table
-ADD CONSTRAINT ord_lease_fk
-FOREIGN KEY (lease_id) REFERENCES lease(lease_id);
-
-ALTER TABLE order_table
-ADD CONSTRAINT ord_coupon_fk
-FOREIGN KEY (coupon_id) REFERENCES coupon(coupon_id);
-
 
 -- Comment Table
 CREATE TABLE comment_table (
@@ -273,16 +215,6 @@ CREATE TABLE comment_table (
     FOREIGN KEY (user_id) REFERENCES user_table(user_id),
     CONSTRAINT fk_comment_univ FOREIGN KEY (university_id) REFERENCES university(university_id)
 );
-
-
---two foreign keys; one referencing the User Table, and the other referencing the University table
-ALTER TABLE comment_table
-ADD CONSTRAINT comm_user_fk
-FOREIGN KEY (user_id) REFERENCES user_table(user_id);
-
-ALTER TABLE comment_table
-ADD CONSTRAINT comm_univ_fk
-FOREIGN KEY (university_id) REFERENCES university(university_id);
 
 
 
