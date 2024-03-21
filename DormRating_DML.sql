@@ -19,17 +19,19 @@ ALTER SESSION SET NLS_TERRITORY=America;
 
 -- Owner Table
 CREATE TABLE owner (
-    owner_id NUMBER PRIMARY KEY,
+    owner_id NUMBER CONSTRAINT owner_pk PRIMARY KEY,
     owner_type VARCHAR2(255),
     contact_email VARCHAR2(255) CONSTRAINT own_email_nn NOT NULL,
-    contact_phone VARCHAR2(255) CONSTRAINT own_email_nn NOT NULL,
+    contact_phone VARCHAR2(255) CONSTRAINT own_phone_nn NOT NULL,
     owner_info CLOB,
     status NUMBER(3) CONSTRAINT own_stat_nn NOT NULL
 );
 
+
+
 -- University Table
 CREATE TABLE university (
-    university_id NUMBER PRIMARY KEY,
+    university_id NUMBER CONSTRAINT univ_pk PRIMARY KEY,
     university_name VARCHAR2(255) CONSTRAINT univ_name_nn NOT NULL,
     location_state VARCHAR2(255) CONSTRAINT univ_state_nn NOT NULL,
     location_city VARCHAR2(255) CONSTRAINT univ_city_nn NOT NULL,
@@ -41,7 +43,7 @@ CREATE TABLE university (
 
 -- Dormitory Table
 CREATE TABLE dormitory (
-    dorm_id NUMBER PRIMARY KEY,
+    dorm_id NUMBER CONSTRAINT dorm_pk PRIMARY KEY,
     university_id NUMBER NOT NULL,
     dorm_name VARCHAR2(255) CONSTRAINT dorm_name_nn NOT NULL,
     room_score NUMBER CONSTRAINT dorm_rscore_nn NOT NULL,
@@ -62,7 +64,7 @@ FOREIGN KEY (university_id) REFERENCES university(university_id);
 
 -- Property Table
 CREATE TABLE property (
-    property_id NUMBER PRIMARY KEY,
+    property_id NUMBER CONSTRAINT prop_pk PRIMARY KEY,
     owner_id NUMBER,
     dorm_id NUMBER,
     room_type VARCHAR2(255) CONSTRAINT prop_rtype_nn NOT NULL,
@@ -90,7 +92,7 @@ FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id);
 
 -- Review Table
 CREATE TABLE review (
-    review_id NUMBER PRIMARY KEY,
+    review_id NUMBER CONSTRAINT rev_pk PRIMARY KEY,
     user_id NUMBER,
     dorm_id NUMBER,
     comment_text CLOB,
@@ -117,7 +119,7 @@ FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id);
 
 -- User Table
 CREATE TABLE user_table (
-    user_id NUMBER PRIMARY KEY,
+    user_id NUMBER CONSTRAINT user_pk PRIMARY KEY,
     nickname VARCHAR2(255),
     user_email VARCHAR2(255) CONSTRAINT usr_email_nn NOT NULL,
     password VARCHAR2(255) CONSTRAINT usr_pwd_nn NOT NULL,
@@ -131,7 +133,7 @@ CREATE TABLE user_table (
 
 -- Admin_user Table
 CREATE TABLE admin_user (
-    admin_user_id NUMBER PRIMARY KEY,
+    admin_user_id NUMBER CONSTRAINT admin_user_pk PRIMARY KEY,
     admin_username VARCHAR2(255) CONSTRAINT adm_usr_nn NOT NULL,
     admin_password VARCHAR2(255) CONSTRAINT adm_pwd_nn NOT NULL,
     permission_level NUMBER(3) CONSTRAINT adm_perm_lvl_nn NOT NULL,
@@ -140,7 +142,7 @@ CREATE TABLE admin_user (
 
 -- Lease Table
 CREATE TABLE lease (
-    lease_id NUMBER PRIMARY KEY,
+    lease_id NUMBER CONSTRAINT lease_pk PRIMARY KEY,
     property_id NUMBER,
     lease_start_time DATE CONSTRAINT lease_stime_nn NOT NULL,
     deposit_status NUMBER(3) CONSTRAINT lease_dstat_nn NOT NULL,
@@ -158,7 +160,7 @@ FOREIGN KEY (property_id) REFERENCES property(property_id);
 
 -- Sublet Table
 CREATE TABLE sublet (
-    sublease_id NUMBER PRIMARY KEY,
+    sublease_id NUMBER CONSTRAINT sublet_pk PRIMARY KEY,
     lease_id NUMBER,
     lessee_user_id NUMBER,
     lessor_user_id NUMBER,
@@ -188,7 +190,7 @@ FOREIGN KEY (lessor_user_id) REFERENCES user_table(user_id);
 
 -- User_lease Table
 CREATE TABLE user_lease (
-    user_lease_id NUMBER PRIMARY KEY,
+    user_lease_id NUMBER CONSTRAINT user_lease_pk PRIMARY KEY,
     user_id NUMBER,
     lease_id NUMBER,
     lease_status NUMBER(3) CONSTRAINT lease_stat_nn NOT NULL,
@@ -208,7 +210,7 @@ FOREIGN KEY (lease_id) REFERENCES lease(lease_id);
 
 -- Coupon Table
 CREATE TABLE coupon (
-    coupon_id NUMBER PRIMARY KEY,
+    coupon_id NUMBER CONSTRAINT coupon_pk PRIMARY KEY,
     description CLOB,
     user_id NUMBER,
     effective_time TIMESTAMP CONSTRAINT effct_time_nn NOT NULL,
@@ -225,7 +227,7 @@ FOREIGN KEY (user_id) REFERENCES user_table(user_id);
 
 -- Order Table (renamed to avoid reserved keyword)
 CREATE TABLE order_table (
-    order_id NUMBER PRIMARY KEY,
+    order_id NUMBER CONSTRAINT order_pk PRIMARY KEY,
     user_id NUMBER,
     lease_id NUMBER,
     coupon_id NUMBER,
