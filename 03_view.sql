@@ -1,3 +1,47 @@
+BEGIN
+    FOR v IN (SELECT NULL FROM USER_VIEWS WHERE VIEW_NAME = 'DORMITORY_RATINGS_V') LOOP
+        EXECUTE IMMEDIATE 'DROP VIEW dormitory_ratings_v';
+    END LOOP;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle exceptions if necessary
+        NULL;
+END;
+/
+
+BEGIN
+    FOR v IN (SELECT NULL FROM USER_VIEWS WHERE VIEW_NAME = 'V_AVAILABLE_PROPERTIES') LOOP
+        EXECUTE IMMEDIATE 'DROP VIEW v_available_properties';
+    END LOOP;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle exceptions if necessary
+        NULL;
+END;
+/
+
+BEGIN
+    FOR v IN (SELECT NULL FROM USER_VIEWS WHERE VIEW_NAME = 'V_LEASE_DETAILS') LOOP
+        EXECUTE IMMEDIATE 'DROP VIEW v_lease_details';
+    END LOOP;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle exceptions if necessary
+        NULL;
+END;
+/
+
+BEGIN
+    FOR v IN (SELECT NULL FROM USER_VIEWS WHERE VIEW_NAME = 'V_UNIVERSITY_DORMITORY_OVERVIEW') LOOP
+        EXECUTE IMMEDIATE 'DROP VIEW v_university_dormitory_overview';
+    END LOOP;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle exceptions if necessary
+        NULL;
+END;
+/
+
 -- the view for dormaitory ratings
 /* This view would aggregate the average scores of each dormitory, providing a quick overview of their ratings. */
 CREATE OR REPLACE VIEW dormitory_ratings_v AS
