@@ -7,7 +7,6 @@ we have divided our scripts into 4 files
 - DML: the script to insert the sample data (7 rows) for each table, it will skip the rows that have duplicate PK
 
   
-**To run the project, run the scripts from 01 to 04 one by one.**
+**To run the project, run the scripts from 01 to 04 one by one (OR simply run the combine_of_all.sql).**
 
-Also, we provide a script that combine all scripts from these 4 files for TAs whoever that want to test our project called **combine_of_all.sql**
-(just the simply combination of all file, run it to excute all script to create table, user, grant, view and insert data instead of run the 4 script one by one)
+The combine_of_all.sql is just the simply combination of all file, it include scripts from all other 4 file)
