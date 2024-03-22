@@ -1,4 +1,5 @@
-
+BEGIN
+BEGIN
 INSERT INTO owner VALUES (1, 'Individual', 'owner1@example.com', '1234567891', 'Owner 1 details', 1);
 INSERT INTO owner VALUES (2, 'Company', 'owner2@example.com', '1234567892', 'Owner 2 details', 1);
 INSERT INTO owner VALUES (3, 'Individual', 'owner3@example.com', '1234567893', 'Owner 3 details', 1);
@@ -109,6 +110,11 @@ INSERT INTO comment_table VALUES (5, 5, 3, 'Campus food options are diverse and 
 INSERT INTO comment_table VALUES (6, 6, 3, 'Parking can be a challenge during peak hours.', 7, CURRENT_TIMESTAMP, 1);
 INSERT INTO comment_table VALUES (7, 7, 4, 'The new student center is a great addition to campus life.', 30, CURRENT_TIMESTAMP, 1);
 
+EXCEPTION WHEN DUP_VAL_ON_INDEX THEN
+    NULL; -- Ignore the error and continue
+END;
+END;
+/
 
 
 COMMIT;
