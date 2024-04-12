@@ -131,6 +131,22 @@ CREATE TABLE user_table (
 );
 
 -- Review Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE review_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE review_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
+
 CREATE TABLE review (
     review_id NUMBER CONSTRAINT rev_pk PRIMARY KEY,
     user_id NUMBER,
