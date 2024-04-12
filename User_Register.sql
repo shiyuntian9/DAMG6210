@@ -1,102 +1,64 @@
--- Check Email Uniqueness
-CREATE OR REPLACE FUNCTION IsEmailUnique(p_email VARCHAR2)
-RETURN BOOLEAN
-IS
-    v_count NUMBER;
-BEGIN
-    SELECT COUNT(*)
-    INTO v_count
-    FROM user_table
-    WHERE user_email = LOWER(p_email);
+-- Ensure the sequence for user IDs exists
+CREATE SEQUENCE user_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NOMAXVALUE;
 
-    RETURN v_count = 0;
-END;
-
-
--- User Registration
-CREATE OR REPLACE PROCEDURE RegisterUser(
-    p_nickname VARCHAR2,
-    p_email VARCHAR2,
-    p_password VARCHAR2,
-    p_avatar BLOB
+-- Creating a stored procedure for registering a new user
+CREATE OR REPLACE PROCEDURE register_user (
+    p_nickname           VARCHAR2,
+    p_email              VARCHAR2,
+    p_password           VARCHAR2,
+    p_payment_method     VARCHAR2,
+    p_balance            FLOAT,
+    p_grade              VARCHAR2,
+    p_avatar             BLOB,
+    p_register_time      DATE,
+    OUT p_user_id        NUMBER
 ) AS
-    -- Check if the email is unique
-    email_unique BOOLEAN;
+    v_email_count NUMBER;
 BEGIN
-    email_unique := UserManagement.IsEmailUnique(p_email);
-    IF NOT email_unique THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Email address already in use.');
+    -- Check if the email is already registered
+    SELECT COUNT(*)
+    INTO v_email_count
+    FROM user_table
+    WHERE user_email = p_email;
+
+    IF v_email_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Email already registered.');
     END IF;
 
-    -- Insert the new user into the user_table
-    INSERT INTO user_table (user_id, nickname, user_email, password, avatar, register_time, status)
-    VALUES (user_seq.NEXTVAL, p_nickname, LOWER(p_email), p_password, p_avatar, SYSDATE, 1);
-
-    -- Log the registration
-    INSERT INTO registration_log (user_id, log_date)
-    VALUES (user_seq.CURRVAL, SYSDATE);
-END;
-
-
--- post register task
-CREATE OR REPLACE TRIGGER SetUpUserPreferences
-AFTER INSERT ON user_table
-FOR EACH ROW
-BEGIN
-    INSERT INTO user_preferences (user_id, preference_setting, setting_value)
-    VALUES (:NEW.user_id, 'theme', 'default');
-END;
-
-
--- user management
-CREATE OR REPLACE PACKAGE UserManagement IS
-    FUNCTION IsEmailUnique(p_email VARCHAR2) RETURN BOOLEAN;
-    PROCEDURE RegisterUser(p_nickname VARCHAR2, p_email VARCHAR2, p_password VARCHAR2, p_avatar BLOB);
-END UserManagement;
-
-CREATE OR REPLACE PACKAGE BODY UserManagement IS
-    FUNCTION IsEmailUnique(p_email VARCHAR2) RETURN BOOLEAN IS
-        v_count NUMBER;
-    BEGIN
-        SELECT COUNT(*)
-        INTO v_count
-        FROM user_table
-        WHERE user_email = LOWER(p_email);
-
-        RETURN v_count = 0;
-    END IsEmailUnique;
-
-    PROCEDURE RegisterUser(
-        p_nickname VARCHAR2,
-        p_email VARCHAR2,
-        p_password VARCHAR2,
-        p_avatar BLOB
-    ) AS
-        email_unique BOOLEAN;
-    BEGIN
-        email_unique := IsEmailUnique(p_email);
-        IF NOT email_unique THEN
-            RAISE_APPLICATION_ERROR(-20001, 'Email address already in use.');
-        END IF;
-
-        INSERT INTO user_table (user_id, nickname, user_email, password, avatar, register_time, status)
-        VALUES (user_seq.NEXTVAL, p_nickname, LOWER(p_email), p_password, p_avatar, SYSDATE, 1);
-
-        -- Log the registration
-        INSERT INTO registration_log (user_id, log_date)
-        VALUES (user_seq.CURRVAL, SYSDATE);
-    END RegisterUser;
-END UserManagement;
-
-
--- simulate by executing the stored procedure 
--- Sample data for a new user registration
-DECLARE
-    v_nickname VARCHAR2(255) := 'JohnDoe';
-    v_email VARCHAR2(255) := 'johndoe@example.com';
-    v_password VARCHAR2(255) := 'securePassword123';
-    v_avatar BLOB := NULL;  -- Assuming no avatar data for simplicity
-BEGIN
-    UserManagement.RegisterUser(v_nickname, v_email, v_password, v_avatar);
+    -- Insert new user
+    INSERT INTO user_table (
+        user_id,
+        nickname,
+        user_email,
+        password,
+        payment_method,
+        balance,
+        grade,
+        avatar,
+        register_time,
+        status
+    ) VALUES (
+        user_id_seq.NEXTVAL,
+        p_nickname,
+        p_email,
+        DBMS_CRYPTO.HASH(UTL_RAW.CAST_TO_RAW(p_password), 2), -- Hashing password using SHA-1
+        p_payment_method,
+        p_balance,
+        p_grade,
+        p_avatar,
+        p_register_time,
+        1
+    )
+    RETURNING user_id INTO p_user_id;
+    
+    -- Commit the transaction
     COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle unexpected errors
+        ROLLBACK;
+        RAISE;
 END;
