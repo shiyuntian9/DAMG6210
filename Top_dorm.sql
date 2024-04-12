@@ -6,17 +6,18 @@ CREATE TABLE TOP_DORMITORIES (
 );
 
 --Function: Calculate the total score
-CREATE OR REPLACE FUNCTION CalculateTotalScore(dorm_id NUMBER) RETURN NUMBER IS
+CREATE OR REPLACE FUNCTION CalculateTotalScore(p_dorm_id NUMBER) RETURN NUMBER IS
     total_score NUMBER;
 BEGIN
-    SELECT (room_score + environment_score + location_score + facility_score) INTO total_score
+    SELECT SUM(room_score + environment_score + location_score + facility_score) INTO total_score
     FROM DORMITORY
-    WHERE dorm_id = dorm_id;
+    WHERE dorm_id = p_dorm_id;
     RETURN total_score;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         RETURN 0;
 END;
+
 
 
 
@@ -26,12 +27,13 @@ BEGIN
     EXECUTE IMMEDIATE 'TRUNCATE TABLE TOP_DORMITORIES';
 
     INSERT INTO TOP_DORMITORIES (dorm_id, total_score, rank)
-    SELECT dorm_id, CalculateTotalScore(dorm_id) AS total_score, ROWNUM AS rank
+    SELECT dorm_id, total_score, ROWNUM AS rank
     FROM (
-        SELECT dorm_id
+        SELECT dorm_id, CalculateTotalScore(dorm_id) AS total_score
         FROM DORMITORY
-        ORDER BY CalculateTotalScore(dorm_id) DESC
-    ) WHERE ROWNUM <= 5;
+        ORDER BY total_score DESC
+    )
+    WHERE ROWNUM <= 5;
 END;
 
 
@@ -44,19 +46,20 @@ BEGIN
 END;
 
 
+-- Package Specification
 CREATE OR REPLACE PACKAGE DormitoryManagement AS
-    FUNCTION CalculateTotalScore(dorm_id NUMBER) RETURN NUMBER;
+    FUNCTION CalculateTotalScore(p_dorm_id NUMBER) RETURN NUMBER;
     PROCEDURE UpdateTopDormitories;
 END DormitoryManagement;
 
---Encapsulate the above functionality into a single package
+-- Package Body
 CREATE OR REPLACE PACKAGE BODY DormitoryManagement AS
-    FUNCTION CalculateTotalScore(dorm_id NUMBER) RETURN NUMBER IS
+    FUNCTION CalculateTotalScore(p_dorm_id NUMBER) RETURN NUMBER IS
         total_score NUMBER;
     BEGIN
-        SELECT (room_score + environment_score + location_score + facility_score) INTO total_score
+        SELECT SUM(room_score + environment_score + location_score + facility_score) INTO total_score
         FROM DORMITORY
-        WHERE dorm_id = dorm_id;
+        WHERE dorm_id = p_dorm_id;
         RETURN total_score;
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
@@ -70,12 +73,50 @@ CREATE OR REPLACE PACKAGE BODY DormitoryManagement AS
         INSERT INTO TOP_DORMITORIES (dorm_id, total_score, rank)
         SELECT dorm_id, CalculateTotalScore(dorm_id) AS total_score, ROWNUM AS rank
         FROM (
-            SELECT dorm_id
+            SELECT dorm_id, CalculateTotalScore(dorm_id) AS total_score
             FROM DORMITORY
-            ORDER BY CalculateTotalScore(dorm_id) DESC
+            ORDER BY total_score DESC
         ) WHERE ROWNUM <= 5;
     END UpdateTopDormitories;
 END DormitoryManagement;
+
+
+
+CREATE OR REPLACE TRIGGER trg_audit_dormitory_insert
+BEFORE INSERT ON dormitory
+FOR EACH ROW
+BEGIN
+    :NEW.log_id := audit_log_seq.NEXTVAL; 
+    INSERT INTO audit_log (log_id, ...)
+    VALUES (:NEW.log_id, ...);
+END;
+
+CREATE OR REPLACE TRIGGER trg_audit_dormitory_insert
+AFTER INSERT ON dormitory
+FOR EACH ROW
+BEGIN
+    INSERT INTO audit_log (log_id, table_name, operation_type, details, operation_time)
+    VALUES (audit_log_seq.NEXTVAL, 'dormitory', 'INSERT', 'Details about the operation', SYSDATE);
+END;
+
+INSERT INTO dormitory (dorm_id, university_id, dorm_name, room_score, environment_score, location_score, facility_score, dorm_photo, number_of_rating, status)
+VALUES (8, 7, 'Dorm H', 5, 3, 3, 5, EMPTY_BLOB(), 19, 1);
+INSERT INTO dormitory (dorm_id, university_id, dorm_name, room_score, environment_score, location_score, facility_score, dorm_photo, number_of_rating, status)
+VALUES (9, 7, 'Dorm I', 5, 4, 3.5, 5, EMPTY_BLOB(), 13, 1);
+INSERT INTO dormitory (dorm_id, university_id, dorm_name, room_score, environment_score, location_score, facility_score, dorm_photo, number_of_rating, status)
+VALUES (10, 7, 'Dorm I', 2, 4, 3.5, 5, EMPTY_BLOB(), 12, 1);
+INSERT INTO dormitory (dorm_id, university_id, dorm_name, room_score, environment_score, location_score, facility_score, dorm_photo, number_of_rating, status)
+VALUES (11, 6, 'Dorm I', 3, 4, 3.5, 5, EMPTY_BLOB(), 16, 1);
+
+
+
+SELECT dorm_id, CalculateTotalScore(dorm_id) AS total_score FROM DORMITORY;
+
+
+EXEC UpdateTopDormitories;
+
+
+SELECT * FROM TOP_DORMITORIES;
 
 
 
