@@ -110,6 +110,13 @@ INSERT INTO comment_table VALUES (5, 5, 3, 'Campus food options are diverse and 
 INSERT INTO comment_table VALUES (6, 6, 3, 'Parking can be a challenge during peak hours.', 7, CURRENT_TIMESTAMP, 1);
 INSERT INTO comment_table VALUES (7, 7, 4, 'The new student center is a great addition to campus life.', 30, CURRENT_TIMESTAMP, 1);
 
+INSERT INTO property (property_id, owner_id, dorm_id, room_type, monthly_rent, deposit, min_lease_period, max_lease_period, available_from, property_photo, description, status)
+VALUES (1, 1, 1, 'Single', 1000, 500, 6, 12, SYSDATE, EMPTY_BLOB(), 'Test property description', 1);
+
+INSERT INTO user_table (user_id, nickname, user_email, password, payment_method, balance, grade, avatar, register_time, status)
+VALUES (1, 'JohnDoe', 'john.doe@example.com', 'password123', 'Credit Card', 0, 'A', EMPTY_BLOB(), SYSDATE, 1);
+
+
 EXCEPTION WHEN DUP_VAL_ON_INDEX THEN
     NULL; -- Ignore the error and continue
 END;

@@ -173,6 +173,22 @@ CREATE TABLE admin_user (
 );
 
 -- Lease Table
+-- Drop existing sequence if necessary
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE lease_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN -- Sequence does not exist
+            RAISE;
+        END IF;
+END;
+/
+
+-- Create sequence for lease_id
+CREATE SEQUENCE lease_seq
+    START WITH 1
+    INCREMENT BY 1;
+
 CREATE TABLE lease (
     lease_id NUMBER CONSTRAINT lease_pk PRIMARY KEY,
     property_id NUMBER,
