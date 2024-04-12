@@ -9,7 +9,7 @@ CREATE TABLE TOP_DORMITORIES (
 CREATE OR REPLACE FUNCTION CalculateTotalScore(dorm_id NUMBER) RETURN NUMBER IS
     total_score NUMBER;
 BEGIN
-    SELECT (environment_score + location_score + facility_score) INTO total_score
+    SELECT (room_score + environment_score + location_score + facility_score) INTO total_score
     FROM DORMITORY
     WHERE dorm_id = dorm_id;
     RETURN total_score;
@@ -37,7 +37,7 @@ END;
 
 --Trigger: update the top five after the dorm room table is updated with ratings
 CREATE OR REPLACE TRIGGER UpdateTopDormsTrigger
-AFTER UPDATE OF environment_score, location_score, facility_score ON DORMITORY
+AFTER UPDATE OF room_score, environment_score, location_score, facility_score ON DORMITORY
 FOR EACH ROW
 BEGIN
     UpdateTopDormitories;
@@ -54,7 +54,7 @@ CREATE OR REPLACE PACKAGE BODY DormitoryManagement AS
     FUNCTION CalculateTotalScore(dorm_id NUMBER) RETURN NUMBER IS
         total_score NUMBER;
     BEGIN
-        SELECT (environment_score + location_score + facility_score) INTO total_score
+        SELECT (room_score + environment_score + location_score + facility_score) INTO total_score
         FROM DORMITORY
         WHERE dorm_id = dorm_id;
         RETURN total_score;
