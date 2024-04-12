@@ -55,6 +55,21 @@ BEGIN EXECUTE IMMEDIATE 'DROP TABLE comment_table CASCADE CONSTRAINTS'; EXCEPTIO
 ALTER SESSION SET NLS_LANGUAGE=American;
 ALTER SESSION SET NLS_TERRITORY=America;
 
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE owner_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE owner_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
 -- Owner Table
 CREATE TABLE owner (
     owner_id NUMBER CONSTRAINT owner_pk PRIMARY KEY,
@@ -66,6 +81,21 @@ CREATE TABLE owner (
 );
 
 
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE university_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE university_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
 
 -- University Table
 CREATE TABLE university (
@@ -82,6 +112,22 @@ CREATE TABLE university (
 
 
 -- Dormitory Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE dormitory_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE dormitory_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
+
 CREATE TABLE dormitory (
     dorm_id NUMBER CONSTRAINT dorm_pk PRIMARY KEY,
     university_id NUMBER NOT NULL,
@@ -98,6 +144,21 @@ CREATE TABLE dormitory (
 
 
 -- Property Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE property_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE property_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
 CREATE TABLE property (
     property_id NUMBER CONSTRAINT prop_pk PRIMARY KEY,
     owner_id NUMBER,
@@ -115,6 +176,22 @@ CREATE TABLE property (
     CONSTRAINT fk_property_dorm FOREIGN KEY (dorm_id) REFERENCES dormitory(dorm_id)
 );
 
+-- Review Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE user_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE user_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
 
 -- User Table
 CREATE TABLE user_table (
@@ -131,6 +208,22 @@ CREATE TABLE user_table (
 );
 
 -- Review Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE review_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE review_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
+
 CREATE TABLE review (
     review_id NUMBER CONSTRAINT rev_pk PRIMARY KEY,
     user_id NUMBER,
@@ -148,6 +241,21 @@ CREATE TABLE review (
 );
 
 -- Admin_user Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE admin_user_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE admin_user_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
 CREATE TABLE admin_user (
     admin_user_id NUMBER CONSTRAINT admin_user_pk PRIMARY KEY,
     admin_username VARCHAR2(255) CONSTRAINT adm_usr_nn NOT NULL,
@@ -155,6 +263,25 @@ CREATE TABLE admin_user (
     permission_level NUMBER(3) CONSTRAINT adm_perm_lvl_nn NOT NULL,
     status NUMBER(3)
 );
+
+
+-- Review Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE lease_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE lease_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
+
 
 -- Lease Table
 CREATE TABLE lease (
@@ -168,6 +295,21 @@ CREATE TABLE lease (
 );
 
 -- Sublet Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE sublet_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE sublet_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
 CREATE TABLE sublet (
     sublease_id NUMBER CONSTRAINT sublet_pk PRIMARY KEY,
     lease_id NUMBER,
@@ -183,6 +325,22 @@ CREATE TABLE sublet (
 );
 
 
+-- Review Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE user_lease_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE user_lease_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
 -- User_lease Table
 CREATE TABLE user_lease (
     user_lease_id NUMBER CONSTRAINT user_lease_pk PRIMARY KEY,
@@ -208,6 +366,21 @@ CREATE TABLE coupon (
 
 
 -- Order Table (renamed to avoid reserved keyword)
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE order_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE order_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
 CREATE TABLE order_table (
     order_id NUMBER CONSTRAINT order_pk PRIMARY KEY,
     user_id NUMBER,
@@ -229,6 +402,21 @@ CREATE TABLE order_table (
 
 
 -- Comment Table
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE comment_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN
+            RAISE;
+        END IF;
+END;
+/
+CREATE SEQUENCE comment_seq
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 999999999
+    CACHE 20;
 CREATE TABLE comment_table (
     comment_id NUMBER PRIMARY KEY,
     user_id NUMBER,
@@ -240,6 +428,10 @@ CREATE TABLE comment_table (
     FOREIGN KEY (user_id) REFERENCES user_table(user_id),
     CONSTRAINT fk_comment_univ FOREIGN KEY (university_id) REFERENCES university(university_id)
 );
+
+
+
+
 
 BEGIN
    FOR c IN (SELECT username FROM dba_users WHERE username = 'DORM_USER') LOOP
