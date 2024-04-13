@@ -48,5 +48,20 @@ CREATE OR REPLACE PACKAGE BODY rental_mgmt_pkg AS
 END rental_mgmt_pkg;
 /
 
+SET SERVEROUTPUT ON;
+
+BEGIN
+    rental_mgmt_pkg.add_lease(
+        p_property_id => 1, 
+        p_user_id => 1, 
+        p_lease_start_time => TO_DATE('2024-01-01', 'YYYY-MM-DD')
+    );
+END;
+/
+
+select * from lease;
+
+
+
 
 
