@@ -52,6 +52,8 @@ SET SERVEROUTPUT ON;
 
 
 -- Assuming you found the max lease_id and it was, say, 50
+SELECT lease_seq.NEXTVAL FROM dual;
+ALTER SEQUENCE lease_seq RESTART START WITH 8;
 
 
 
