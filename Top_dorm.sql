@@ -1,3 +1,7 @@
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE TOP_DORMITORIES CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; END;
+/
+
+
 --calculate top 5 dorm
 CREATE TABLE TOP_DORMITORIES (
     dorm_id NUMBER,
@@ -82,22 +86,6 @@ END DormitoryManagement;
 
 
 
-CREATE OR REPLACE TRIGGER trg_audit_dormitory_insert
-BEFORE INSERT ON dormitory
-FOR EACH ROW
-BEGIN
-    :NEW.log_id := audit_log_seq.NEXTVAL; 
-    INSERT INTO audit_log (log_id, ...)
-    VALUES (:NEW.log_id, ...);
-END;
-
-CREATE OR REPLACE TRIGGER trg_audit_dormitory_insert
-AFTER INSERT ON dormitory
-FOR EACH ROW
-BEGIN
-    INSERT INTO audit_log (log_id, table_name, operation_type, details, operation_time)
-    VALUES (audit_log_seq.NEXTVAL, 'dormitory', 'INSERT', 'Details about the operation', SYSDATE);
-END;
 
 INSERT INTO dormitory (dorm_id, university_id, dorm_name, room_score, environment_score, location_score, facility_score, dorm_photo, number_of_rating, status)
 VALUES (8, 7, 'Dorm H', 5, 3, 3, 5, EMPTY_BLOB(), 19, 1);
@@ -108,12 +96,10 @@ VALUES (10, 7, 'Dorm I', 2, 4, 3.5, 5, EMPTY_BLOB(), 12, 1);
 INSERT INTO dormitory (dorm_id, university_id, dorm_name, room_score, environment_score, location_score, facility_score, dorm_photo, number_of_rating, status)
 VALUES (11, 6, 'Dorm I', 3, 4, 3.5, 5, EMPTY_BLOB(), 16, 1);
 
-
+EXEC UpdateTopDormitories;
 
 SELECT dorm_id, CalculateTotalScore(dorm_id) AS total_score FROM DORMITORY;
 
-
-EXEC UpdateTopDormitories;
 
 
 SELECT * FROM TOP_DORMITORIES;
