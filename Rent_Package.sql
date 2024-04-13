@@ -50,6 +50,11 @@ END rental_mgmt_pkg;
 
 SET SERVEROUTPUT ON;
 
+
+-- Assuming you found the max lease_id and it was, say, 50
+
+
+
 BEGIN
     rental_mgmt_pkg.add_lease(
         p_property_id => 1, 
@@ -60,6 +65,7 @@ END;
 /
 
 select * from lease;
+
 
 
 
