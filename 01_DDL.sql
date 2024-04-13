@@ -129,6 +129,18 @@ END;
 /
 
 -- Create the user sequence anew with specified attributes
+-- Attempt to drop the existing sequence if it exists
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE user_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN -- Error when sequence does not exist
+            RAISE;
+        END IF;
+END;
+/
+
+-- Create the user sequence anew with specified attributes
 CREATE SEQUENCE user_seq
     START WITH 1
     INCREMENT BY 1
@@ -136,6 +148,7 @@ CREATE SEQUENCE user_seq
     MAXVALUE 999999999
     CACHE 20;
 /
+
 
 CREATE TABLE user_table (
     user_id NUMBER CONSTRAINT user_pk PRIMARY KEY,
