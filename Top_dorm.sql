@@ -85,8 +85,18 @@ CREATE OR REPLACE PACKAGE BODY DormitoryManagement AS
 END DormitoryManagement;
 
 
+EXEC UpdateTopDormitories;
+
+SELECT dorm_id, CalculateTotalScore(dorm_id) AS total_score FROM DORMITORY;
 
 
+
+SELECT * FROM TOP_DORMITORIES;
+
+
+
+
+--Test
 INSERT INTO dormitory (dorm_id, university_id, dorm_name, room_score, environment_score, location_score, facility_score, dorm_photo, number_of_rating, status)
 VALUES (8, 7, 'Dorm H', 5, 3, 3, 5, EMPTY_BLOB(), 19, 1);
 INSERT INTO dormitory (dorm_id, university_id, dorm_name, room_score, environment_score, location_score, facility_score, dorm_photo, number_of_rating, status)
