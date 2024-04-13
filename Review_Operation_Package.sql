@@ -60,4 +60,38 @@ CREATE OR REPLACE PACKAGE BODY review_pkg AS
 END review_pkg;
 /
 
+SELECT increment_by FROM user_sequences WHERE sequence_name = 'REVIEW_SEQ';
+
+SET SERVEROUTPUT ON;
+
+
+
+
+
+
+BEGIN
+    review_pkg.add_review(
+        p_user_id => 1,
+        p_dorm_id => 4,
+        p_room_type => 'Single',
+        p_room_score => 8,
+        p_environment_score => 7,
+        p_location_score => 9,
+        p_facility_score => 8,
+        p_comment_text => 'Great room with excellent amenities!',
+        p_review_time => SYSTIMESTAMP
+    );
+    DBMS_OUTPUT.PUT_LINE('Review added successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error adding review: ' || SQLERRM);
+END;
+/
+
+
+
+SELECT *
+FROM review;
+
+
 
