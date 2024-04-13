@@ -1,15 +1,36 @@
 --1.Update Room Scores in the Dormitory Table
 --This trigger automatically updates the average room score in the dormitory table whenever a new review is inserted.
---1.Update Room Scores in the Dormitory Table
+
 CREATE OR REPLACE TRIGGER trg_update_room_score
-AFTER INSERT ON review
-FOR EACH ROW
-BEGIN
-    UPDATE dormitory
-    SET room_score = (SELECT AVG(room_overall_score) FROM review WHERE dorm_id = :NEW.dorm_id)
-    WHERE dorm_id = :NEW.dorm_id;
+FOR INSERT ON review
+COMPOUND TRIGGER
+
+    -- Type to store dorm IDs during the row-level phase
+    TYPE t_dorm_ids IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+    g_dorm_ids t_dorm_ids;
+
+    AFTER EACH ROW IS
+    BEGIN
+        -- Collect dorm IDs from inserted reviews
+        g_dorm_ids(:NEW.dorm_id) := 1;
+    END AFTER EACH ROW;
+
+    AFTER STATEMENT IS
+    BEGIN
+        -- Update dormitory scores after all rows are processed
+        FOR idx IN g_dorm_ids.FIRST .. g_dorm_ids.LAST LOOP
+            IF g_dorm_ids.EXISTS(idx) THEN
+                UPDATE dormitory
+                SET room_score = (SELECT AVG(room_overall_score)
+                                  FROM review
+                                  WHERE dorm_id = idx)
+                WHERE dorm_id = idx;
+            END IF;
+        END LOOP;
+    END AFTER STATEMENT;
 END;
 /
+
 
 
 --2.Check Room Availability on Lease Creation
