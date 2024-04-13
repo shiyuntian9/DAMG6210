@@ -142,7 +142,7 @@ END;
 
 -- Create the user sequence anew with specified attributes
 CREATE SEQUENCE user_seq
-    START WITH 1
+    START WITH 8
     INCREMENT BY 1
     MINVALUE 1
     MAXVALUE 999999999
@@ -174,7 +174,7 @@ EXCEPTION
 END;
 /
 CREATE SEQUENCE review_seq
-    START WITH 1
+    START WITH 8
     INCREMENT BY 1
     MINVALUE 1
     MAXVALUE 999999999
@@ -219,7 +219,7 @@ END;
 
 -- Create sequence for lease_id
 CREATE SEQUENCE lease_seq
-    START WITH 1
+    START WITH 8
     INCREMENT BY 1;
 
 CREATE TABLE lease (

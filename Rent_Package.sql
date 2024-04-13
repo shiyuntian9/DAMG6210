@@ -51,9 +51,28 @@ END rental_mgmt_pkg;
 SET SERVEROUTPUT ON;
 
 
--- Assuming you found the max lease_id and it was, say, 50
-SELECT lease_seq.NEXTVAL FROM dual;
-ALTER SEQUENCE lease_seq RESTART START WITH 8;
+CREATE OR REPLACE PROCEDURE reset_lease_sequence AS
+    v_max_id NUMBER;
+    v_start_id NUMBER;
+BEGIN
+    -- Retrieve the maximum lease_id currently in use
+    SELECT COALESCE(MAX(lease_id), 0) + 1 INTO v_max_id FROM lease;
+
+    -- Retrieve the next value of the sequence
+    SELECT lease_seq.NEXTVAL INTO v_start_id FROM dual;
+
+    -- If the next sequence value is less than or equal to the maximum used id, reset the sequence
+    IF v_start_id <= v_max_id THEN
+        -- Reset sequence to the next highest available number
+        EXECUTE IMMEDIATE 'ALTER SEQUENCE lease_seq RESTART WITH ' || v_max_id;
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle exceptions (e.g., sequence does not exist)
+        DBMS_OUTPUT.PUT_LINE('Error resetting sequence: ' || SQLERRM);
+END reset_lease_sequence;
+/
+
 
 
 

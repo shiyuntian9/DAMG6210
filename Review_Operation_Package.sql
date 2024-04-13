@@ -65,7 +65,25 @@ SELECT increment_by FROM user_sequences WHERE sequence_name = 'REVIEW_SEQ';
 SET SERVEROUTPUT ON;
 
 
+CREATE OR REPLACE PROCEDURE reset_review_sequence AS
+    v_max_id NUMBER;
+    v_start_id NUMBER;
+BEGIN
+    -- Get the maximum review_id used so far
+    SELECT COALESCE(MAX(review_id), 0) + 1 INTO v_max_id FROM review;
 
+    -- Get the next value that would be used by the sequence
+    SELECT review_seq.NEXTVAL INTO v_start_id FROM dual;
+
+    -- Compare and reset if the current sequence value is not greater than max used id
+    IF v_start_id <= v_max_id THEN
+        EXECUTE IMMEDIATE 'ALTER SEQUENCE review_seq RESTART WITH ' || v_max_id;
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error resetting sequence: ' || SQLERRM);
+END reset_review_sequence;
+/
 
 
 
@@ -92,6 +110,8 @@ END;
 
 SELECT *
 FROM review;
+
+
 
 
 
