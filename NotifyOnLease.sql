@@ -1,4 +1,3 @@
-
 ALTER TABLE lease
 add lease_end_date Date;
 
@@ -11,6 +10,7 @@ MODIFY lease_end_date DATE NOT NULL;
 
 
 DESC LEASE;
+DESC User_lease;
 
 
 CREATE OR REPLACE FUNCTION DaysUntilExpiration(p_lease_end_date DATE) RETURN NUMBER IS
@@ -74,7 +74,37 @@ CREATE OR REPLACE PACKAGE BODY LeaseManagement AS
     END GetExpiringLeases;
 END LeaseManagement;
 
+SET SERVEROUTPUT ON;
 
 EXEC LeaseManagement.GetExpiringLeases;
 
 EXEC GetExpiringLeases;
+
+
+--Test
+INSERT INTO lease (lease_id, property_id, lease_start_time, lease_end_date, deposit_status, contract_file, status)
+VALUES (8, 2, SYSDATE - 365, SYSDATE + 29, 1, EMPTY_BLOB(), 1);  -- 即将到期
+
+INSERT INTO lease (lease_id, property_id, lease_start_time, lease_end_date, deposit_status, contract_file, status)
+VALUES (9, 4, SYSDATE - 365, SYSDATE + 45, 1, EMPTY_BLOB(), 1);  -- 不会到期
+
+INSERT INTO lease (lease_id, property_id, lease_start_time, lease_end_date, deposit_status, contract_file, status)
+VALUES (10, 7, SYSDATE - 365, SYSDATE - 1, 1, EMPTY_BLOB(), 1);   -- 已经到期
+
+
+INSERT INTO user_lease (user_lease_id, user_id, lease_id, lease_status)
+VALUES (8, 7, 8, 1);
+
+INSERT INTO user_lease (user_lease_id, user_id, lease_id, lease_status)
+VALUES (9, 6, 9, 1);
+
+INSERT INTO user_lease (user_lease_id, user_id, lease_id, lease_status)
+VALUES (10, 5, 10, 1);
+
+SET SERVEROUTPUT ON;
+
+EXEC LeaseManagement.GetExpiringLeases;
+
+EXEC GetExpiringLeases;
+
+
