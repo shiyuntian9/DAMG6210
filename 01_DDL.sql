@@ -128,27 +128,17 @@ EXCEPTION
 END;
 /
 
--- Create the user sequence anew with specified attributes
--- Attempt to drop the existing sequence if it exists
-BEGIN
-    EXECUTE IMMEDIATE 'DROP SEQUENCE user_seq';
-EXCEPTION
-    WHEN OTHERS THEN
-        IF SQLCODE != -2289 THEN -- Error when sequence does not exist
-            RAISE;
-        END IF;
-END;
-/
 
 -- Create the user sequence anew with specified attributes
+
+
 CREATE SEQUENCE user_seq
     START WITH 8
     INCREMENT BY 1
     MINVALUE 1
     MAXVALUE 999999999
-    CACHE 20;
-/
-
+     NOCACHE;
+    
 
 CREATE TABLE user_table (
     user_id NUMBER CONSTRAINT user_pk PRIMARY KEY,
@@ -226,6 +216,7 @@ CREATE TABLE lease (
     lease_id NUMBER CONSTRAINT lease_pk PRIMARY KEY,
     property_id NUMBER,
     lease_start_time DATE CONSTRAINT lease_stime_nn NOT NULL,
+    lease_end_time DATE CONSTRAINT lease_etime_nn NOT NULL,
     deposit_status NUMBER(3) CONSTRAINT lease_dstat_nn NOT NULL,
     contract_file BLOB CONSTRAINT lease_cfile_nn NOT NULL,
     status NUMBER(3) CONSTRAINT lease_stat_nn NOT NULL,
@@ -249,6 +240,21 @@ CREATE TABLE sublet (
 
 
 -- User_lease Table
+-- Drop existing sequence if necessary
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE user_lease_seq';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN -- Sequence does not exist
+            RAISE;
+        END IF;
+END;
+/
+
+-- Create sequence for user_lease_seq
+CREATE SEQUENCE user_lease_seq
+    START WITH 8
+    INCREMENT BY 1;
 CREATE TABLE user_lease (
     user_lease_id NUMBER CONSTRAINT user_lease_pk PRIMARY KEY,
     user_id NUMBER,

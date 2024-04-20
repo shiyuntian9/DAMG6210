@@ -1,7 +1,7 @@
 --1.Update Room Scores in the Dormitory Table
 --This trigger automatically updates the average room score in the dormitory table whenever a new review is inserted.
 
-CREATE OR REPLACE TRIGGER trg_update_room_score
+CREATE OR REPLACE TRIGGER trg_update_scores
 FOR INSERT ON review
 COMPOUND TRIGGER
 
@@ -11,7 +11,7 @@ COMPOUND TRIGGER
 
     AFTER EACH ROW IS
     BEGIN
-        -- Collect dorm IDs from inserted reviews
+        -- Collect dorm IDs from inserted reviews to ensure they are unique
         g_dorm_ids(:NEW.dorm_id) := 1;
     END AFTER EACH ROW;
 
@@ -20,16 +20,35 @@ COMPOUND TRIGGER
         -- Update dormitory scores after all rows are processed
         FOR idx IN g_dorm_ids.FIRST .. g_dorm_ids.LAST LOOP
             IF g_dorm_ids.EXISTS(idx) THEN
-                UPDATE dormitory
-                SET room_score = (SELECT AVG(room_overall_score)
-                                  FROM review
-                                  WHERE dorm_id = idx)
-                WHERE dorm_id = idx;
+                -- Calculate new average scores for each category
+                UPDATE dormitory d
+                SET room_score = (
+                    SELECT AVG(room_overall_score)
+                    FROM review
+                    WHERE dorm_id = idx
+                ),
+                environment_score = (
+                    SELECT AVG(environment_score)
+                    FROM review
+                    WHERE dorm_id = idx
+                ),
+                location_score = (
+                    SELECT AVG(location_score)
+                    FROM review
+                    WHERE dorm_id = idx
+                ),
+                facility_score = (
+                    SELECT AVG(facility_score)
+                    FROM review
+                    WHERE dorm_id = idx
+                )
+                WHERE d.dorm_id = idx;
             END IF;
         END LOOP;
     END AFTER STATEMENT;
 END;
 /
+
 
 
 
@@ -108,6 +127,24 @@ BEGIN
 END;
 /
 
+
+ --5.check every score not greater than 10
+CREATE OR REPLACE TRIGGER trg_check_scores_before_insert
+BEFORE INSERT ON review
+FOR EACH ROW
+BEGIN
+    -- Check if any score exceeds 10
+    IF :NEW.room_overall_score > 10 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Room overall score cannot exceed 10.');
+    ELSIF :NEW.environment_score > 10 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Environment score cannot exceed 10.');
+    ELSIF :NEW.location_overall_score > 10 THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Location overall score cannot exceed 10.');
+    ELSIF :NEW.facility_overall_score > 10 THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Facility overall score cannot exceed 10.');
+    END IF;
+END;
+/
 
 --5. Auto-Calculate Lease End Date Trigger
 --This trigger will automatically calculate and set the lease end date when a new lease is created, based on the lease start date and the maximum lease period specified for the property. This helps ensure that all lease records are consistently maintained with accurate end dates.

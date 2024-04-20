@@ -1,6 +1,14 @@
+CREATE OR REPLACE PACKAGE rental_mgmt_pkg AS
 
+    PROCEDURE add_lease(
+        p_property_id NUMBER,
+        p_user_id NUMBER,
+        p_lease_start_time DATE,
+        p_lease_end_time DATE
+    );
 
-
+END rental_mgmt_pkg;
+/
 
 CREATE OR REPLACE PACKAGE BODY rental_mgmt_pkg AS
 
@@ -10,14 +18,23 @@ CREATE OR REPLACE PACKAGE BODY rental_mgmt_pkg AS
         p_lease_start_time DATE,
         p_lease_end_time DATE
     ) AS
+        l_lease_id NUMBER;
     BEGIN
-        -- Insert new lease
+        -- Insert new lease and retrieve the lease_id
         INSERT INTO lease (
             lease_id, property_id, lease_start_time, lease_end_time,
             deposit_status, contract_file, status
         ) VALUES (
             lease_seq.NEXTVAL, p_property_id, p_lease_start_time, p_lease_end_time,
             0, EMPTY_BLOB(), 1
+        )
+        RETURNING lease_id INTO l_lease_id;
+
+        -- Insert new user_lease association
+        INSERT INTO user_lease (
+            user_lease_id, user_id, lease_id, lease_status
+        ) VALUES (
+            user_lease_seq.NEXTVAL, p_user_id, l_lease_id, 1 
         );
 
         -- Update the available_from date in the property table
@@ -25,29 +42,16 @@ CREATE OR REPLACE PACKAGE BODY rental_mgmt_pkg AS
         SET available_from = p_lease_end_time + 1 -- make it available the day after the lease ends
         WHERE property_id = p_property_id;
 
+    EXCEPTION
+        WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+            ROLLBACK; -- Rollback the transaction on error
     END add_lease;
-
-    FUNCTION is_available(p_property_id NUMBER, p_date DATE) RETURN BOOLEAN AS
-        l_count NUMBER;
-    BEGIN
-        SELECT COUNT(*)
-        INTO l_count
-        FROM lease
-        WHERE property_id = p_property_id
-          AND lease_start_time <= p_date;
-        RETURN l_count = 0;
-    END is_available;
-
-    FUNCTION calculate_due_amount(p_lease_id NUMBER) RETURN NUMBER AS
-        l_total_due NUMBER;
-    BEGIN
-        -- As there is no monthly_rent, this function needs rethinking or removal
-        l_total_due := 0; -- Placeholder logic
-        RETURN l_total_due;
-    END calculate_due_amount;
 
 END rental_mgmt_pkg;
 /
+
+
 
 SET SERVEROUTPUT ON;
 
@@ -83,7 +87,7 @@ BEGIN
         p_property_id => 1, 
         p_user_id => 1, 
         p_lease_start_time => TO_DATE('2024-01-01', 'YYYY-MM-DD'),
-        p_lease_end_time => TO_DATE('2024-01-01', 'YYYY-MM-DD') 
+        p_lease_end_time => TO_DATE('2025-01-01', 'YYYY-MM-DD') 
     );
     DBMS_OUTPUT.PUT_LINE('Lease added successfully.');
 EXCEPTION
