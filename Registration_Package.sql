@@ -84,25 +84,40 @@ END user_registration_pkg;
 
 CREATE OR REPLACE PROCEDURE reset_user_sequence AS
     v_max_id NUMBER;
-    v_start_id NUMBER;
 BEGIN
     -- Get the maximum user_id used so far
-    SELECT COALESCE(MAX(user_id), 0) + 1 INTO v_max_id FROM user_table;
+    SELECT COALESCE(MAX(user_id), 0) INTO v_max_id FROM user_table;
 
-    -- Get the next value that would be used by the sequence
-    SELECT user_seq.NEXTVAL INTO v_start_id FROM dual;
+    -- Drop the existing sequence
+    EXECUTE IMMEDIATE 'DROP SEQUENCE user_seq';
 
-    -- Compare and reset if the current sequence value is not greater than max used id
-    IF v_start_id <= v_max_id THEN
-        -- Remove semicolon within the string
-        EXECUTE IMMEDIATE 'ALTER SEQUENCE user_seq RESTART WITH ' || v_max_id;
-    END IF;
+    -- Create a new sequence starting with the next higher value than the maximum ID found
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE user_seq START WITH ' || v_max_id;
 EXCEPTION
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Error resetting sequence: ' || SQLERRM);
 END reset_user_sequence;
 /
 
+
+
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    CURSOR user_cursor IS SELECT * FROM user_table;
+    rec user_table%ROWTYPE;
+BEGIN
+    OPEN user_cursor;
+    LOOP
+        FETCH user_cursor INTO rec;
+        EXIT WHEN user_cursor%NOTFOUND;
+        -- Assuming some columns for demonstration, like user_id and user_email
+        DBMS_OUTPUT.PUT_LINE('User ID: ' || rec.user_id || ', Email: ' || rec.user_email);
+    END LOOP;
+    CLOSE user_cursor;
+END;
+/
 
 
 BEGIN
@@ -125,16 +140,15 @@ EXCEPTION
 END;
 /
 
-/*
+
 BEGIN
-    reset_user_sequence;  -- Reset the sequence based on current data
     user_registration_pkg.register_user(
-        p_nickname         => 'testuser2',
-        p_email            => 'testuser2@example.com',
-        p_password         => 'securePassword!23',
+        p_nickname         => 'newuser',
+        p_email            => 'existingemail@example.com',
+        p_password         => 'password123',
         p_payment_method   => 'Credit Card',
-        p_balance          => 150.0,
-        p_grade            => 'Sophomore',
+        p_balance          => 100.0,
+        p_grade            => 'Junior',
         p_avatar           => NULL,
         p_register_time    => SYSDATE,
         p_status           => 1
@@ -142,10 +156,13 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('User registered successfully.');
 EXCEPTION
     WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('Error registering user: ' || SQLERRM);
+        IF SQLCODE = -20003 THEN
+            DBMS_OUTPUT.PUT_LINE('Error registering user: Email has already been registered.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Error registering user: ' || SQLERRM);
+        END IF;
 END;
 /
-*/
 
 
 select * from user_table;
