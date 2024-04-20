@@ -1,29 +1,30 @@
-CREATE OR REPLACE PACKAGE rental_mgmt_pkg AS
-    PROCEDURE add_lease(
-        p_property_id NUMBER,
-        p_user_id NUMBER,
-        p_lease_start_time DATE
-    );
 
-    FUNCTION is_available(p_property_id NUMBER, p_date DATE) RETURN BOOLEAN;
 
-    FUNCTION calculate_due_amount(p_lease_id NUMBER) RETURN NUMBER; -- Assumes a different method to calculate due amounts
-END rental_mgmt_pkg;
-/
+
 
 CREATE OR REPLACE PACKAGE BODY rental_mgmt_pkg AS
 
     PROCEDURE add_lease(
         p_property_id NUMBER,
         p_user_id NUMBER,
-        p_lease_start_time DATE
+        p_lease_start_time DATE,
+        p_lease_end_time DATE
     ) AS
     BEGIN
+        -- Insert new lease
         INSERT INTO lease (
-            lease_id, property_id, lease_start_time, deposit_status, contract_file, status
+            lease_id, property_id, lease_start_time, lease_end_time,
+            deposit_status, contract_file, status
         ) VALUES (
-            lease_seq.NEXTVAL, p_property_id, p_lease_start_time, 0, EMPTY_BLOB(), 1
+            lease_seq.NEXTVAL, p_property_id, p_lease_start_time, p_lease_end_time,
+            0, EMPTY_BLOB(), 1
         );
+
+        -- Update the available_from date in the property table
+        UPDATE property
+        SET available_from = p_lease_end_time + 1 -- make it available the day after the lease ends
+        WHERE property_id = p_property_id;
+
     END add_lease;
 
     FUNCTION is_available(p_property_id NUMBER, p_date DATE) RETURN BOOLEAN AS
@@ -76,14 +77,40 @@ END reset_lease_sequence;
 
 
 
+
 BEGIN
     rental_mgmt_pkg.add_lease(
         p_property_id => 1, 
         p_user_id => 1, 
-        p_lease_start_time => TO_DATE('2024-01-01', 'YYYY-MM-DD')
+        p_lease_start_time => TO_DATE('2024-01-01', 'YYYY-MM-DD'),
+        p_lease_end_time => TO_DATE('2024-01-01', 'YYYY-MM-DD') 
     );
+    DBMS_OUTPUT.PUT_LINE('Lease added successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle any exception that was not previously caught
+        -- This will show the error message after "ORA-XXXXX: "
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SUBSTR(SQLERRM, INSTR(SQLERRM, ': ') + 2));
 END;
 /
+
+
+BEGIN
+    rental_mgmt_pkg.add_lease(
+        p_property_id => 2, 
+        p_user_id => 1, 
+        p_lease_start_time => TO_DATE('2024-01-01', 'YYYY-MM-DD'),
+        p_lease_end_time => TO_DATE('2025-01-01', 'YYYY-MM-DD') 
+    );
+    DBMS_OUTPUT.PUT_LINE('Lease added successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle any exception that was not previously caught
+        -- This will show the error message after "ORA-XXXXX: "
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SUBSTR(SQLERRM, INSTR(SQLERRM, ': ') + 2));
+END;
+/
+
 
 select * from lease;
 

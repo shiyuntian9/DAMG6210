@@ -35,33 +35,62 @@ END;
 
 --2.Check Room Availability on Lease Creation
 --This trigger ensures that a property cannot be leased if it is not available from the current date onwards.
-CREATE OR REPLACE TRIGGER trg_check_room_availability
+CREATE OR REPLACE TRIGGER trg_check_lease_availability
 BEFORE INSERT ON lease
 FOR EACH ROW
 DECLARE
-    v_available_from DATE;
+    v_lease_end_time DATE;
 BEGIN
-    SELECT available_from INTO v_available_from FROM property WHERE property_id = :NEW.property_id;
-    IF v_available_from > SYSDATE THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Property is not available for lease yet.');
+    -- Retrieve the end date of the last lease for the property
+    SELECT MAX(lease_end_time)
+    INTO v_lease_end_time
+    FROM lease
+    WHERE property_id = :NEW.property_id;
+
+    -- If there's a lease that ends after the new lease is set to start, raise an exception
+    IF v_lease_end_time IS NOT NULL AND v_lease_end_time >= :NEW.lease_start_time THEN
+        RAISE_APPLICATION_ERROR(-20002, 'The property is not available for leasing on the requested start date.');
+    END IF;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle any exception that was not previously caught
+        DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+        
+END;
+/
+
+
+--3.Enforce Maximum and min Lease Period
+--This trigger prevents the creation of a lease that exceeds the maximum lease period defined for a property.
+CREATE OR REPLACE TRIGGER trg_check_lease_duration
+BEFORE INSERT ON lease
+FOR EACH ROW
+DECLARE
+    v_min_lease_period NUMBER;
+    v_max_lease_period NUMBER;
+    v_lease_duration   NUMBER;
+BEGIN
+    -- Retrieve the minimum and maximum lease periods for the property
+    SELECT min_lease_period, max_lease_period
+    INTO v_min_lease_period, v_max_lease_period
+    FROM property
+    WHERE property_id = :NEW.property_id;
+
+    -- Calculate the duration of the new lease in months
+    v_lease_duration := MONTHS_BETWEEN(:NEW.lease_end_time, :NEW.lease_start_time);
+
+    -- Check if the lease duration is within the min and max lease periods
+    IF v_lease_duration < v_min_lease_period OR v_lease_duration > v_max_lease_period THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Lease duration must be between ' || 
+                                        TO_CHAR(v_min_lease_period) || ' and ' || 
+                                        TO_CHAR(v_max_lease_period) || ' months.');
     END IF;
 END;
 /
 
---3.Enforce Maximum Lease Period
---This trigger prevents the creation of a lease that exceeds the maximum lease period defined for a property.
-CREATE OR REPLACE TRIGGER trg_enforce_lease_period
-BEFORE INSERT ON lease
-FOR EACH ROW
-DECLARE
-    v_max_period NUMBER;
-BEGIN
-    SELECT max_lease_period INTO v_max_period FROM property WHERE property_id = :NEW.property_id;
-    IF MONTHS_BETWEEN(:NEW.lease_start_time, SYSDATE) > v_max_period THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Lease period exceeds maximum allowed duration.');
-    END IF;
-END;
-/
+
+
 
 
 --4.Validate New User Email

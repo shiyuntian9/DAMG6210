@@ -1,7 +1,4 @@
 CREATE OR REPLACE PACKAGE user_registration_pkg IS
-    -- Function to check if the email already exists
-    FUNCTION email_exists(p_email IN VARCHAR2) RETURN BOOLEAN;
-
     -- Procedure to register a new user
     PROCEDURE register_user(
         p_nickname         IN VARCHAR2,
@@ -17,19 +14,8 @@ CREATE OR REPLACE PACKAGE user_registration_pkg IS
 END user_registration_pkg;
 /
 
+
 CREATE OR REPLACE PACKAGE BODY user_registration_pkg IS
-
-    -- Function to check if the email already exists
-    FUNCTION email_exists(p_email IN VARCHAR2) RETURN BOOLEAN IS
-        v_count NUMBER;
-    BEGIN
-        SELECT COUNT(*)
-        INTO v_count
-        FROM user_table
-        WHERE user_email = p_email;
-
-        RETURN (v_count > 0);
-    END email_exists;
 
     -- Procedure to register a new user
     PROCEDURE register_user(
@@ -44,11 +30,6 @@ CREATE OR REPLACE PACKAGE BODY user_registration_pkg IS
         p_status           IN NUMBER
     ) IS
     BEGIN
-        -- Check if the email already exists
-        IF email_exists(p_email) THEN
-            RAISE_APPLICATION_ERROR(-20001, 'Email already registered.');
-        END IF;
-
         -- Insert the new user into the database
         INSERT INTO user_table (
             user_id,
@@ -82,6 +63,7 @@ END user_registration_pkg;
 /
 
 
+
 CREATE OR REPLACE PROCEDURE reset_user_sequence AS
     v_max_id NUMBER;
 BEGIN
@@ -104,42 +86,61 @@ END reset_user_sequence;
 
 SET SERVEROUTPUT ON;
 
-DECLARE
-    CURSOR user_cursor IS SELECT * FROM user_table;
-    rec user_table%ROWTYPE;
-BEGIN
-    OPEN user_cursor;
-    LOOP
-        FETCH user_cursor INTO rec;
-        EXIT WHEN user_cursor%NOTFOUND;
-        -- Assuming some columns for demonstration, like user_id and user_email
-        DBMS_OUTPUT.PUT_LINE('User ID: ' || rec.user_id || ', Email: ' || rec.user_email);
-    END LOOP;
-    CLOSE user_cursor;
-END;
-/
+
+
+
+SELECT MAX(user_id) FROM user_table;
+SELECT user_seq.NEXTVAL FROM dual;
+
+
 
 
 BEGIN
-    reset_user_sequence;
     user_registration_pkg.register_user(
-        p_nickname         => 'testuser',
-        p_email            => 'testuser@example.com',
-        p_password         => 'securePassword!23',
+        p_nickname         => 'newuser3',
+        p_email            => 'existingemail3@example.com',
+        p_password         => 'password123',
         p_payment_method   => 'Credit Card',
-        p_balance          => 150.0,
-        p_grade            => 'Sophomore',
-        p_avatar           => NULL, -- Assuming no avatar is set
+        p_balance          => 100.0,
+        p_grade            => 'Junior',
+        p_avatar           => NULL,
         p_register_time    => SYSDATE,
         p_status           => 1
     );
     DBMS_OUTPUT.PUT_LINE('User registered successfully.');
 EXCEPTION
     WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('Error registering user: ' || SQLERRM);
+        IF SQLCODE = -20003 THEN
+            DBMS_OUTPUT.PUT_LINE('Error registering user: Email has already been registered.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Error registering user: ' || SQLERRM);
+        END IF;
 END;
 /
 
+
+BEGIN
+    user_registration_pkg.register_user(
+        p_nickname         => 'newuser2',
+        p_email            => 'existingemail2@example.com',
+        p_password         => 'password123',
+        p_payment_method   => 'Credit Card',
+        p_balance          => 100.0,
+        p_grade            => 'Junior',
+        p_avatar           => NULL,
+        p_register_time    => SYSDATE,
+        p_status           => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('User registered successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20003 THEN
+            DBMS_OUTPUT.PUT_LINE('Error registering user: Email has already been registered.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Error registering user: ' || SQLERRM);
+        END IF;
+END;
+/
 
 BEGIN
     user_registration_pkg.register_user(
@@ -164,5 +165,99 @@ EXCEPTION
 END;
 /
 
+BEGIN
+    user_registration_pkg.register_user(
+        p_nickname         => 'newuser4',
+        p_email            => 'existingemail4@example.com',
+        p_password         => 'password123',
+        p_payment_method   => 'Credit Card',
+        p_balance          => 100.0,
+        p_grade            => 'Junior',
+        p_avatar           => NULL,
+        p_register_time    => SYSDATE,
+        p_status           => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('User registered successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20003 THEN
+            DBMS_OUTPUT.PUT_LINE('Error registering user: Email has already been registered.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Error registering user: ' || SQLERRM);
+        END IF;
+END;
+/
+
+BEGIN
+    user_registration_pkg.register_user(
+        p_nickname         => 'newuser5',
+        p_email            => 'existingemail5@example.com',
+        p_password         => 'password123',
+        p_payment_method   => 'Credit Card',
+        p_balance          => 100.0,
+        p_grade            => 'Junior',
+        p_avatar           => NULL,
+        p_register_time    => SYSDATE,
+        p_status           => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('User registered successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20003 THEN
+            DBMS_OUTPUT.PUT_LINE('Error registering user: Email has already been registered.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Error registering user: ' || SQLERRM);
+        END IF;
+END;
+/
+
+BEGIN
+    user_registration_pkg.register_user(
+        p_nickname         => 'newuser6',
+        p_email            => 'existingemail6@example.com',
+        p_password         => 'password123',
+        p_payment_method   => 'Credit Card',
+        p_balance          => 100.0,
+        p_grade            => 'Junior',
+        p_avatar           => NULL,
+        p_register_time    => SYSDATE,
+        p_status           => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('User registered successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20003 THEN
+            DBMS_OUTPUT.PUT_LINE('Error registering user: Email has already been registered.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Error registering user: ' || SQLERRM);
+        END IF;
+END;
+/
+
+BEGIN
+    user_registration_pkg.register_user(
+        p_nickname         => 'newuser7',
+        p_email            => 'existingemail7@example.com',
+        p_password         => 'password123',
+        p_payment_method   => 'Credit Card',
+        p_balance          => 100.0,
+        p_grade            => 'Junior',
+        p_avatar           => NULL,
+        p_register_time    => SYSDATE,
+        p_status           => 1
+    );
+    DBMS_OUTPUT.PUT_LINE('User registered successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -20003 THEN
+            DBMS_OUTPUT.PUT_LINE('Error registering user: Email has already been registered.');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Error registering user: ' || SQLERRM);
+        END IF;
+END;
+/
 
 select * from user_table;
+
+
+
